@@ -35,27 +35,44 @@ class Menu {
                         } ))
                 ->where('id',Auth::user()->id)
                 ->get();
-        print_r($data->toArray());
-        dd($data->toArray());
-        return $this->prepare($data);
+        //print_r($data->toArray());
+        //dd($data->toArray());
+        return $this->prepare($data->toArray());
 
     }//getMenu
 
     private function prepare($data)
     {
         $ret = array();
-        foreach($data as $k=>$v)
+        $ret2 = array();
+        foreach($data[0]['roles'] as $k=>$v)
         {
-            $t = explode("/",$v->title);
-            $command = '$ret["'.join('"]["', $t).'"] = serialize(array("name"=>$v->name,"type"=>$v->js_controller)) ;';
+            foreach($v['modules'] as $k1=>$m)
+                $ret[$m['id']] = $m;
+        }
+        //print_r($ret); die();
+        foreach($ret as $k=>$v)
+        {
+            $t = explode("/",$v['title']);
+            //$command = '$ret2["'.join('"]["', $t).'"] = serialize(array("name"=>$v["name"],"type"=>$v["js_controller"])) ;';
+            $command = '$ret2["'.join('"]["', $t).'"] = serialize($v) ;';
             eval($command);
         }//foreach
-        //print_r($ret);
-        $m = '<ul class="nav navbar-nav navbar-right">'.$this->getItem($ret).'</ul>';
+        print_r($ret2);
+        dd($ret2);
+        $m = '<ul class="nav navbar-nav navbar-right">'.$this->getItem($ret2).'</ul>';
 
         //print_r($m);
         return $m;
     }//prepare
+
+    public function getObj($v)
+    {
+        $ret = new StdClass();
+        $ret->name = $v['name'];
+        //return array("name"=>$v["name"],"type"=>$v["js_controller"]);
+
+    }//getObj
 
     private function getItem($m, $k='')
     {
